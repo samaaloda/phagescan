@@ -188,7 +188,7 @@ Ground-truth labels are in `ml/data/ground_truth_labels.csv`. Merged accuracy ou
 
 ## License
 
-License to be specified. We recommend an [OSI-approved license](https://opensource.org/licenses) (e.g. MIT or Apache 2.0) before public distribution.
+MIT
 
 ## Issues
 
