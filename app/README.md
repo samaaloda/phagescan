@@ -193,4 +193,4 @@ npm run web        # Start web version (limited functionality)
 
 ## License
 
-License to be specified. See the [root README](../README.md).
+MIT. See the [root README](../README.md).
