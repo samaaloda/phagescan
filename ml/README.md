@@ -208,4 +208,4 @@ Ground-truth labels: `data/ground_truth_labels.csv` (RGB evaluation), `data/rf_g
 
 ## License
 
-License to be specified. See the [root README](../README.md).
+MIT. See the [root README](../README.md).
