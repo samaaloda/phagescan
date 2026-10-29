@@ -1,283 +1,757 @@
 {
-  "rgb_rule_full": {
-    "n": 94,
-    "support": {
-      "ineffective": 47,
-      "effective": 47,
-      "total": 94
-    },
-    "accuracy": 1.0,
-    "balanced_accuracy": 1.0,
-    "class_accuracy": {
-      "ineffective": 1.0,
-      "effective": 1.0
-    },
-    "confusion_matrix": {
-      "labels": [
-        "ineffective",
-        "effective"
+  "binary_cnn": {
+    "used_by_app": true,
+    "model_path": "api/models/well_classifier_cnn.h5",
+    "architecture": {
+      "model_type": "binary",
+      "input_shape": [
+        null,
+        128,
+        128,
+        3
       ],
-      "counts": [
-        [
-          47,
-          0
-        ],
-        [
-          0,
-          47
-        ]
+      "output_units": 2,
+      "expected_labels": [
+        "Ineffective",
+        "Effective"
       ],
-      "normalized_true": [
-        [
-          1.0,
-          0.0
-        ],
-        [
-          0.0,
-          1.0
-        ]
-      ],
-      "normalized_pred": [
-        [
-          1.0,
-          0.0
-        ],
-        [
-          0.0,
-          1.0
-        ]
+      "layers": [
+        {
+          "class_name": "InputLayer",
+          "name": "input_layer",
+          "filters": null,
+          "units": null,
+          "activation": null,
+          "rate": null,
+          "kernel_regularizer": null
+        },
+        {
+          "class_name": "Conv2D",
+          "name": "conv2d",
+          "filters": 16,
+          "units": null,
+          "activation": "relu",
+          "rate": null,
+          "kernel_regularizer": null
+        },
+        {
+          "class_name": "MaxPooling2D",
+          "name": "max_pooling2d",
+          "filters": null,
+          "units": null,
+          "activation": null,
+          "rate": null,
+          "kernel_regularizer": null
+        },
+        {
+          "class_name": "Conv2D",
+          "name": "conv2d_1",
+          "filters": 32,
+          "units": null,
+          "activation": "relu",
+          "rate": null,
+          "kernel_regularizer": null
+        },
+        {
+          "class_name": "MaxPooling2D",
+          "name": "max_pooling2d_1",
+          "filters": null,
+          "units": null,
+          "activation": null,
+          "rate": null,
+          "kernel_regularizer": null
+        },
+        {
+          "class_name": "Flatten",
+          "name": "flatten",
+          "filters": null,
+          "units": null,
+          "activation": null,
+          "rate": null,
+          "kernel_regularizer": null
+        },
+        {
+          "class_name": "Dense",
+          "name": "dense",
+          "filters": null,
+          "units": 64,
+          "activation": "relu",
+          "rate": null,
+          "kernel_regularizer": null
+        },
+        {
+          "class_name": "Dropout",
+          "name": "dropout",
+          "filters": null,
+          "units": null,
+          "activation": null,
+          "rate": 0.3,
+          "kernel_regularizer": null
+        },
+        {
+          "class_name": "Dense",
+          "name": "dense_1",
+          "filters": null,
+          "units": 2,
+          "activation": "softmax",
+          "rate": null,
+          "kernel_regularizer": null
+        }
       ]
     },
-    "precision": {
-      "ineffective": 1.0,
-      "effective": 1.0,
-      "macro": 1.0,
-      "weighted": 1.0,
-      "micro": 1.0
-    },
-    "recall": {
-      "ineffective": 1.0,
-      "effective": 1.0,
-      "macro": 1.0,
-      "weighted": 1.0,
-      "micro": 1.0
-    },
-    "f1": {
-      "ineffective": 1.0,
-      "effective": 1.0,
-      "macro": 1.0,
-      "weighted": 1.0,
-      "micro": 1.0
-    },
-    "specificity": {
-      "ineffective": 1.0,
-      "effective": 1.0
-    },
-    "matthews_corrcoef": 1.0,
-    "cohen_kappa": 1.0,
-    "sklearn_report": {
-      "ineffective": {
-        "precision": 1.0,
-        "recall": 1.0,
-        "f1-score": 1.0,
-        "support": 47.0
-      },
-      "effective": {
-        "precision": 1.0,
-        "recall": 1.0,
-        "f1-score": 1.0,
-        "support": 47.0
-      },
-      "accuracy": 1.0,
-      "macro avg": {
-        "precision": 1.0,
-        "recall": 1.0,
-        "f1-score": 1.0,
-        "support": 94.0
-      },
-      "weighted avg": {
-        "precision": 1.0,
-        "recall": 1.0,
-        "f1-score": 1.0,
-        "support": 94.0
-      }
-    },
-    "roc_auc": 1.0,
-    "average_precision": 1.0
-  },
-  "random_forest_ground_truth_holdout": {
-    "n": 19,
-    "support": {
-      "ineffective": 10,
-      "effective": 9,
-      "total": 19
-    },
-    "accuracy": 1.0,
-    "balanced_accuracy": 1.0,
-    "class_accuracy": {
-      "ineffective": 1.0,
-      "effective": 1.0
-    },
-    "confusion_matrix": {
-      "labels": [
-        "ineffective",
-        "effective"
+    "api_verification": {
+      "checked": [
+        "circle_1_1.png",
+        "circle_1_10.png",
+        "circle_1_2.png",
+        "circle_1_3.png",
+        "circle_1_4.png"
       ],
-      "counts": [
-        [
-          10,
-          0
-        ],
-        [
-          0,
-          9
-        ]
+      "batch_labels": [
+        "Effective",
+        "Ineffective",
+        "Effective",
+        "Effective",
+        "Effective"
       ],
-      "normalized_true": [
-        [
-          1.0,
-          0.0
-        ],
-        [
-          0.0,
-          1.0
-        ]
+      "api_labels": [
+        "Effective",
+        "Ineffective",
+        "Effective",
+        "Effective",
+        "Effective"
       ],
-      "normalized_pred": [
-        [
-          1.0,
-          0.0
-        ],
-        [
-          0.0,
-          1.0
-        ]
+      "all_match": true,
+      "preprocess": "api.classification_utils.preprocess_image (128x128, /255.0, cv2 BGR)",
+      "class_mapping": [
+        "Ineffective",
+        "Effective"
       ]
     },
-    "precision": {
-      "ineffective": 1.0,
-      "effective": 1.0,
-      "macro": 1.0,
-      "weighted": 1.0,
-      "micro": 1.0
-    },
-    "recall": {
-      "ineffective": 1.0,
-      "effective": 1.0,
-      "macro": 1.0,
-      "weighted": 1.0,
-      "micro": 1.0
-    },
-    "f1": {
-      "ineffective": 1.0,
-      "effective": 1.0,
-      "macro": 1.0,
-      "weighted": 1.0,
-      "micro": 1.0
-    },
-    "specificity": {
-      "ineffective": 1.0,
-      "effective": 1.0
-    },
-    "matthews_corrcoef": 1.0,
-    "cohen_kappa": 1.0,
-    "sklearn_report": {
-      "ineffective": {
-        "precision": 1.0,
-        "recall": 1.0,
-        "f1-score": 1.0,
-        "support": 10.0
-      },
-      "effective": {
-        "precision": 1.0,
-        "recall": 1.0,
-        "f1-score": 1.0,
-        "support": 9.0
+    "demo_images_were_training_images": false,
+    "demo_images_note": "Current ml/demo/segmented_wells files have zero MD5 overlap with the CNN_2 SegmentedWells training crops, so the full-demo score is not a training-set resubstitution of those original files.",
+    "label_caveat": "data/ground_truth_labels.csv matches the binary RGB rule (distance < 20 \u2192 Effective) on this demo plate and has not been independently verified as wet-lab ground truth.",
+    "demo_gt_equals_rgb_rule": true,
+    "metrics_full_demo_vs_csv_labels": {
+      "n": 94,
+      "classes": [
+        "Ineffective",
+        "Effective"
+      ],
+      "support": {
+        "Ineffective": 47,
+        "Effective": 47
       },
       "accuracy": 1.0,
-      "macro avg": {
-        "precision": 1.0,
-        "recall": 1.0,
-        "f1-score": 1.0,
-        "support": 19.0
+      "balanced_accuracy": 1.0,
+      "precision": {
+        "Ineffective": 1.0,
+        "Effective": 1.0
       },
-      "weighted avg": {
-        "precision": 1.0,
-        "recall": 1.0,
-        "f1-score": 1.0,
-        "support": 19.0
+      "recall": {
+        "Ineffective": 1.0,
+        "Effective": 1.0
+      },
+      "f1": {
+        "Ineffective": 1.0,
+        "Effective": 1.0
+      },
+      "precision_macro": 1.0,
+      "recall_macro": 1.0,
+      "f1_macro": 1.0,
+      "precision_weighted": 1.0,
+      "recall_weighted": 1.0,
+      "f1_weighted": 1.0,
+      "confusion_matrix": {
+        "labels": [
+          "Ineffective",
+          "Effective"
+        ],
+        "counts": [
+          [
+            47,
+            0
+          ],
+          [
+            0,
+            47
+          ]
+        ],
+        "normalized_true": [
+          [
+            1.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0
+          ]
+        ]
+      },
+      "sklearn_report": {
+        "Ineffective": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1-score": 1.0,
+          "support": 47.0
+        },
+        "Effective": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1-score": 1.0,
+          "support": 47.0
+        },
+        "accuracy": 1.0,
+        "macro avg": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1-score": 1.0,
+          "support": 94.0
+        },
+        "weighted avg": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1-score": 1.0,
+          "support": 94.0
+        }
+      },
+      "roc_auc": 1.0,
+      "average_precision": 1.0,
+      "roc_auc_ovr_macro": null,
+      "_score_positive_class": "Effective"
+    },
+    "metrics_full_demo_vs_rgb_rule": {
+      "n": 94,
+      "classes": [
+        "Ineffective",
+        "Effective"
+      ],
+      "support": {
+        "Ineffective": 47,
+        "Effective": 47
+      },
+      "accuracy": 1.0,
+      "balanced_accuracy": 1.0,
+      "precision": {
+        "Ineffective": 1.0,
+        "Effective": 1.0
+      },
+      "recall": {
+        "Ineffective": 1.0,
+        "Effective": 1.0
+      },
+      "f1": {
+        "Ineffective": 1.0,
+        "Effective": 1.0
+      },
+      "precision_macro": 1.0,
+      "recall_macro": 1.0,
+      "f1_macro": 1.0,
+      "precision_weighted": 1.0,
+      "recall_weighted": 1.0,
+      "f1_weighted": 1.0,
+      "confusion_matrix": {
+        "labels": [
+          "Ineffective",
+          "Effective"
+        ],
+        "counts": [
+          [
+            47,
+            0
+          ],
+          [
+            0,
+            47
+          ]
+        ],
+        "normalized_true": [
+          [
+            1.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0
+          ]
+        ]
+      },
+      "sklearn_report": {
+        "Ineffective": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1-score": 1.0,
+          "support": 47.0
+        },
+        "Effective": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1-score": 1.0,
+          "support": 47.0
+        },
+        "accuracy": 1.0,
+        "macro avg": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1-score": 1.0,
+          "support": 94.0
+        },
+        "weighted avg": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1-score": 1.0,
+          "support": 94.0
+        }
+      },
+      "roc_auc": 1.0,
+      "average_precision": 1.0,
+      "roc_auc_ovr_macro": null,
+      "_score_positive_class": "Effective"
+    },
+    "original_split": {
+      "available": true,
+      "path": "/Users/sama/Desktop/phage-scan/PhageScan-lydia/SegmentedWells",
+      "reason": null,
+      "n_images": 94,
+      "split_counts": {
+        "train": 56,
+        "test": 19,
+        "val": 19
+      },
+      "label_source": "rgb_rule_threshold_20 (serving-aligned; not independent wet-lab labels)"
+    },
+    "original_split_metrics": {
+      "train": {
+        "n": 56,
+        "classes": [
+          "Ineffective",
+          "Effective"
+        ],
+        "support": {
+          "Ineffective": 27,
+          "Effective": 29
+        },
+        "accuracy": 1.0,
+        "balanced_accuracy": 1.0,
+        "precision": {
+          "Ineffective": 1.0,
+          "Effective": 1.0
+        },
+        "recall": {
+          "Ineffective": 1.0,
+          "Effective": 1.0
+        },
+        "f1": {
+          "Ineffective": 1.0,
+          "Effective": 1.0
+        },
+        "precision_macro": 1.0,
+        "recall_macro": 1.0,
+        "f1_macro": 1.0,
+        "precision_weighted": 1.0,
+        "recall_weighted": 1.0,
+        "f1_weighted": 1.0,
+        "confusion_matrix": {
+          "labels": [
+            "Ineffective",
+            "Effective"
+          ],
+          "counts": [
+            [
+              27,
+              0
+            ],
+            [
+              0,
+              29
+            ]
+          ],
+          "normalized_true": [
+            [
+              1.0,
+              0.0
+            ],
+            [
+              0.0,
+              1.0
+            ]
+          ]
+        },
+        "sklearn_report": {
+          "Ineffective": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1-score": 1.0,
+            "support": 27.0
+          },
+          "Effective": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1-score": 1.0,
+            "support": 29.0
+          },
+          "accuracy": 1.0,
+          "macro avg": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1-score": 1.0,
+            "support": 56.0
+          },
+          "weighted avg": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1-score": 1.0,
+            "support": 56.0
+          }
+        },
+        "roc_auc": 1.0,
+        "average_precision": 1.0,
+        "roc_auc_ovr_macro": null,
+        "_score_positive_class": "Effective"
+      },
+      "val": {
+        "n": 19,
+        "classes": [
+          "Ineffective",
+          "Effective"
+        ],
+        "support": {
+          "Ineffective": 8,
+          "Effective": 11
+        },
+        "accuracy": 1.0,
+        "balanced_accuracy": 1.0,
+        "precision": {
+          "Ineffective": 1.0,
+          "Effective": 1.0
+        },
+        "recall": {
+          "Ineffective": 1.0,
+          "Effective": 1.0
+        },
+        "f1": {
+          "Ineffective": 1.0,
+          "Effective": 1.0
+        },
+        "precision_macro": 1.0,
+        "recall_macro": 1.0,
+        "f1_macro": 1.0,
+        "precision_weighted": 1.0,
+        "recall_weighted": 1.0,
+        "f1_weighted": 1.0,
+        "confusion_matrix": {
+          "labels": [
+            "Ineffective",
+            "Effective"
+          ],
+          "counts": [
+            [
+              8,
+              0
+            ],
+            [
+              0,
+              11
+            ]
+          ],
+          "normalized_true": [
+            [
+              1.0,
+              0.0
+            ],
+            [
+              0.0,
+              1.0
+            ]
+          ]
+        },
+        "sklearn_report": {
+          "Ineffective": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1-score": 1.0,
+            "support": 8.0
+          },
+          "Effective": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1-score": 1.0,
+            "support": 11.0
+          },
+          "accuracy": 1.0,
+          "macro avg": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1-score": 1.0,
+            "support": 19.0
+          },
+          "weighted avg": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1-score": 1.0,
+            "support": 19.0
+          }
+        },
+        "roc_auc": 1.0,
+        "average_precision": 1.0,
+        "roc_auc_ovr_macro": null,
+        "_score_positive_class": "Effective"
+      },
+      "test": {
+        "n": 19,
+        "classes": [
+          "Ineffective",
+          "Effective"
+        ],
+        "support": {
+          "Ineffective": 12,
+          "Effective": 7
+        },
+        "accuracy": 1.0,
+        "balanced_accuracy": 1.0,
+        "precision": {
+          "Ineffective": 1.0,
+          "Effective": 1.0
+        },
+        "recall": {
+          "Ineffective": 1.0,
+          "Effective": 1.0
+        },
+        "f1": {
+          "Ineffective": 1.0,
+          "Effective": 1.0
+        },
+        "precision_macro": 1.0,
+        "recall_macro": 1.0,
+        "f1_macro": 1.0,
+        "precision_weighted": 1.0,
+        "recall_weighted": 1.0,
+        "f1_weighted": 1.0,
+        "confusion_matrix": {
+          "labels": [
+            "Ineffective",
+            "Effective"
+          ],
+          "counts": [
+            [
+              12,
+              0
+            ],
+            [
+              0,
+              7
+            ]
+          ],
+          "normalized_true": [
+            [
+              1.0,
+              0.0
+            ],
+            [
+              0.0,
+              1.0
+            ]
+          ]
+        },
+        "sklearn_report": {
+          "Ineffective": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1-score": 1.0,
+            "support": 12.0
+          },
+          "Effective": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1-score": 1.0,
+            "support": 7.0
+          },
+          "accuracy": 1.0,
+          "macro avg": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1-score": 1.0,
+            "support": 19.0
+          },
+          "weighted avg": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1-score": 1.0,
+            "support": 19.0
+          }
+        },
+        "roc_auc": 1.0,
+        "average_precision": 0.9999999999999999,
+        "roc_auc_ovr_macro": null,
+        "_score_positive_class": "Effective"
       }
     },
-    "roc_auc": 1.0,
-    "average_precision": 1.0
-  },
-  "random_forest_ground_truth_cv": {
-    "accuracy": {
-      "mean": 0.9789473684210528,
-      "std": 0.04707511531578505
+    "training_history": {
+      "available": true,
+      "source_path": "/Users/sama/Desktop/phage-scan/PhageScan-lydia/CNN_2.csv",
+      "copied_to": "ml/results/binary_cnn/training_history_cnn2.csv",
+      "note": "Copied from CNN_2.ipynb training log. Not a new training run.",
+      "last_epoch": {
+        "accuracy": 1.0,
+        "loss": 0.0027335989288985,
+        "val_accuracy": 1.0,
+        "val_loss": 1.4430108421947809e-05
+      }
     },
-    "balanced_accuracy": {
-      "mean": 0.9777777777777779,
-      "std": 0.04969039949999535
+    "class_distribution_demo_csv_labels": {
+      "Effective": 47,
+      "Ineffective": 47
     },
-    "precision_macro": {
-      "mean": 0.9833333333333334,
-      "std": 0.03726779962499647
-    },
-    "precision_weighted": {
-      "mean": 0.9824561403508772,
-      "std": 0.03922926276315413
-    },
-    "recall_macro": {
-      "mean": 0.9777777777777779,
-      "std": 0.04969039949999535
-    },
-    "recall_weighted": {
-      "mean": 0.9789473684210528,
-      "std": 0.04707511531578505
-    },
-    "f1_macro": {
-      "mean": 0.978409090909091,
-      "std": 0.048278740423290896
-    },
-    "f1_weighted": {
-      "mean": 0.9785885167464116,
-      "std": 0.047877532054122304
-    },
-    "matthews_corrcoef": {
-      "mean": 0.9610152971798825,
-      "std": 0.08717244558841013
-    },
-    "cohen_kappa": {
-      "mean": 0.9573033707865168,
-      "std": 0.09547256533145168
-    },
-    "roc_auc": {
-      "mean": 1.0,
-      "std": 0.0
-    },
-    "average_precision": {
-      "mean": 1.0,
-      "std": 0.0
+    "class_distribution_demo_cnn": {
+      "Effective": 47,
+      "Ineffective": 47
     }
   },
-  "notes": {
-    "classes": [
-      "ineffective",
-      "effective"
+  "three_class_rgb": {
+    "used_by_app": true,
+    "source": "api.classification_utils._classify_well_rgb",
+    "thresholds": {
+      "Effective": "<10",
+      "Somewhat Effective": ">=10 and <25",
+      "Ineffective": ">=25"
+    },
+    "evaluable_against_independent_labels": false,
+    "metrics": null,
+    "reason_metrics_omitted": "No independent three-class reference labels exist in this repository. Existing 3-class Actual values from the historical notebook were produced by this same RGB rule, so scoring the rule against them would be circular rule agreement, not classification accuracy. Labels were not invented.",
+    "label_inventory": {
+      "ml/data/ground_truth_labels.csv": "binary Effective/Ineffective only; matches RGB distance < 20",
+      "PhageScan-lydia/cnn_classification_results_3_classes.csv": "19 rows named Image_0..Image_18; Actual labels were generated by the same 3-class RGB rule in CNN_multiclass.ipynb. Not usable as independent labels and not joinable to current demo filenames.",
+      "invented_labels": "none \u2014 this script does not create 3-class ground truth"
+    },
+    "prediction_counts_demo": {
+      "Effective": 15,
+      "Somewhat Effective": 32,
+      "Ineffective": 47
+    },
+    "n_demo": 94,
+    "note": "The prediction-count figure is the classifier's output distribution, not an accuracy result."
+  },
+  "four_class_cnn": {
+    "mapping_risk_note": "On the current demo plate this model predicted Unknown=0, Somewhat Effective=47, Effective=5, Ineffective=42. The binary CNN predicted 47 Effective / 47 Ineffective on the same wells. Without a recovered LabelEncoder, the API class names for this 4-class head should not be treated as verified.",
+    "used_by_app": false,
+    "used_by_api": true,
+    "model_path": "api/models/well_classifier_cnn_4_classes.h5",
+    "architecture": {
+      "model_type": "multiclass",
+      "input_shape": [
+        null,
+        128,
+        128,
+        3
+      ],
+      "output_units": 4,
+      "expected_labels": [
+        "Effective",
+        "Ineffective",
+        "Somewhat Effective",
+        "Unknown"
+      ],
+      "layers": [
+        {
+          "class_name": "InputLayer",
+          "name": "input_layer",
+          "filters": null,
+          "units": null,
+          "activation": null,
+          "rate": null,
+          "kernel_regularizer": null
+        },
+        {
+          "class_name": "Conv2D",
+          "name": "conv2d",
+          "filters": 16,
+          "units": null,
+          "activation": "relu",
+          "rate": null,
+          "kernel_regularizer": null
+        },
+        {
+          "class_name": "MaxPooling2D",
+          "name": "max_pooling2d",
+          "filters": null,
+          "units": null,
+          "activation": null,
+          "rate": null,
+          "kernel_regularizer": null
+        },
+        {
+          "class_name": "Conv2D",
+          "name": "conv2d_1",
+          "filters": 32,
+          "units": null,
+          "activation": "relu",
+          "rate": null,
+          "kernel_regularizer": null
+        },
+        {
+          "class_name": "MaxPooling2D",
+          "name": "max_pooling2d_1",
+          "filters": null,
+          "units": null,
+          "activation": null,
+          "rate": null,
+          "kernel_regularizer": null
+        },
+        {
+          "class_name": "Flatten",
+          "name": "flatten",
+          "filters": null,
+          "units": null,
+          "activation": null,
+          "rate": null,
+          "kernel_regularizer": null
+        },
+        {
+          "class_name": "Dense",
+          "name": "dense",
+          "filters": null,
+          "units": 64,
+          "activation": "relu",
+          "rate": null,
+          "kernel_regularizer": null
+        },
+        {
+          "class_name": "Dropout",
+          "name": "dropout",
+          "filters": null,
+          "units": null,
+          "activation": null,
+          "rate": 0.3,
+          "kernel_regularizer": null
+        },
+        {
+          "class_name": "Dense",
+          "name": "dense_1",
+          "filters": null,
+          "units": 4,
+          "activation": "softmax",
+          "rate": null,
+          "kernel_regularizer": null
+        }
+      ]
+    },
+    "output_mapping_trustworthy": "unknown",
+    "output_mapping_note": "The file is a Keras Sequential with Dense(4, softmax) and no L2, matching the binary CNN backbone. There is no recovered training script, so the API label order cannot be verified against a LabelEncoder. Predicted class counts on the demo plate are a characterization only.",
+    "evaluable_against_reference_labels": false,
+    "metrics": null,
+    "reason_metrics_omitted": "No 4-class training notebook or label file was found (no Dense(4) trainer, no Unknown labels). API maps argmax onto ['Effective', 'Ineffective', 'Somewhat Effective', 'Unknown'] without a saved LabelEncoder. Current demo labels are binary only, so 4-class precision/recall cannot be computed without inventing classes.",
+    "missing": [
+      "No 4-class training notebook or label file was found (no Dense(4) trainer, no Unknown labels).",
+      "API maps argmax onto ['Effective', 'Ineffective', 'Somewhat Effective', 'Unknown'] without a saved LabelEncoder.",
+      "Current demo labels are binary only, so 4-class precision/recall cannot be computed without inventing classes."
     ],
-    "positive_class": "effective",
-    "rgb_threshold": 20,
-    "labels_independently_verified": false,
-    "rf": {
-      "n_estimators": 100,
-      "class_weight": "balanced",
-      "test_size": 0.2,
-      "n_folds": 5,
-      "random_state": 42
+    "prediction_counts_demo": {
+      "Effective": 5,
+      "Ineffective": 42,
+      "Somewhat Effective": 47,
+      "Unknown": 0
     },
-    "label_sets": {
-      "ground_truth_labels.csv_n": 94
-    }
+    "n_demo": 94,
+    "predicted_unknown_count": 0
   }
 }

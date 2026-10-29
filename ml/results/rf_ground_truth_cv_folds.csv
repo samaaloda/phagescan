@@ -1,6 +1,0 @@
-model,split,n,accuracy,balanced_accuracy,precision_ineffective,precision_effective,precision_macro,precision_weighted,precision_micro,recall_ineffective,recall_effective,recall_macro,recall_weighted,recall_micro,f1_ineffective,f1_effective,f1_macro,f1_weighted,f1_micro,specificity_ineffective,specificity_effective,matthews_corrcoef,cohen_kappa,roc_auc,average_precision,tn,fp,fn,tp,support_ineffective,support_effective
-random_forest,fold_1,19,0.8947368421052632,0.8888888888888888,1.0,0.8333333333333334,0.9166666666666667,0.9122807017543861,0.8947368421052632,0.7777777777777778,1.0,0.8888888888888888,0.8947368421052632,0.8947368421052632,0.875,0.9090909090909091,0.8920454545454546,0.8929425837320574,0.8947368421052632,0.7777777777777778,1.0,0.8050764858994133,0.7865168539325843,1.0,1.0,7,2,0,10,9,10
-random_forest,fold_2,19,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,9,0,0,10,9,10
-random_forest,fold_3,19,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,10,0,0,9,10,9
-random_forest,fold_4,19,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,10,0,0,9,10,9
-random_forest,fold_5,18,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,9,0,0,9,9,9

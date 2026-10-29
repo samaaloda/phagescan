@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""Compute classification metrics and figures for PhageScan ML models.
+"""Historical RGB-rule and Random Forest metrics (not used by the app).
 
-Uses only data and code under ml/:
-  - RGB rule classifier (rgb_classifier.py) vs data/ground_truth_labels.csv
-  - RandomForest on RGB histograms vs the same wells (stratified holdout + 5-fold CV)
+App/API evaluation lives in evaluate_app_models.py and writes to ml/results/.
+This script writes under data/archive/rf_rgb_evaluation/ so it does not mix
+with the binary CNN, 3-class RGB, and 4-class CNN outputs.
 
 Re-run from ml/:
     python report_metrics.py
@@ -41,7 +41,7 @@ from train_random_forest import extract_features
 BASE_DIR = Path(__file__).resolve().parent
 DATA_DIR = BASE_DIR / "data"
 WELLS_DIR = BASE_DIR / "demo" / "segmented_wells"
-RESULTS_DIR = BASE_DIR / "results"
+RESULTS_DIR = BASE_DIR / "data" / "archive" / "rf_rgb_evaluation"
 FIGURES_DIR = RESULTS_DIR / "figures"
 
 CLASSES = ["ineffective", "effective"]
@@ -509,7 +509,7 @@ def write_markdown_report(
         "- All scores use `data/ground_truth_labels.csv` on the 94 demo wells in `demo/segmented_wells/`.",
         "- These labels have **not** been independently verified as biological ground truth. On this demo plate they match the RGB distance rule (threshold 20), so 100% RGB accuracy means the labels agree with the rule, not that the rule was tested against a wet-lab assay.",
         "- The Random Forest is trained on RGB histogram features against the same labels, so holdout/CV scores measure how well color histograms reproduce that labeling on wells from a single plate.",
-        "- Figures: `results/figures/`.",
+        "- Figures: `data/archive/rf_rgb_evaluation/figures/`.",
         "",
     ]
     (RESULTS_DIR / "METRICS.md").write_text("\n".join(lines))

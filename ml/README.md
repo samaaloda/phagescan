@@ -19,7 +19,8 @@ The `ml/` directory contains the research and prototyping code behind PhageScan'
 
 - Segmenting wells from plate photos
 - Classifying wells by RGB color distance
-- Evaluating the RGB rule and a Random Forest on demo-well labels
+- Evaluating the app's binary CNN and 3-class RGB rule (and characterizing the API-only 4-class CNN)
+- Evaluating the RGB rule and a Random Forest on demo-well labels (historical / optional baseline)
 - Training a Random Forest classifier on RGB histogram features
 
 ## Repo Contents
@@ -37,8 +38,9 @@ The `ml/` directory contains the research and prototyping code behind PhageScan'
 | `data/merged_results_with_accuracy.csv` | RGB vs label merge from `evaluate.py` (generated) |
 | `data/rf_blind_test_results.csv` | Random Forest holdout predictions from `train_random_forest.py` (generated) |
 | `data/archive/` | Legacy files, including an unused RF label CSV |
-| `report_metrics.py` | Reproducible metrics, confusion matrices, and figures |
-| `results/` | Generated metrics tables and figures |
+| `evaluate_app_models.py` | App/API classifier evaluation (binary CNN, 3-class RGB, 4-class CNN) |
+| `report_metrics.py` | Historical RGB-rule and Random Forest metrics (writes to `data/archive/`) |
+| `results/` | App-model metrics only: binary CNN, 3-class RGB, 4-class CNN |
 | `requirements.txt` | Python dependencies |
 
 ## System Requirements
@@ -60,8 +62,10 @@ No GPU required. OpenCV and scikit-learn run on CPU.
 **Dependencies** (from `requirements.txt`):
 
 ```
-opencv-python-headless, numpy, pandas, scikit-learn, matplotlib
+opencv-python-headless, numpy, pandas, scikit-learn, matplotlib, tensorflow
 ```
+
+TensorFlow is required for `evaluate_app_models.py` (binary and 4-class CNNs). The RGB/Random Forest scripts run without it.
 
 ## Installation Guide
 
@@ -189,12 +193,32 @@ evaluate_predictions(
 
 ## Reproducing Results
 
-To reproduce the evaluation pipeline end-to-end:
+### Application classifiers (preferred)
+
+This is the evaluation that matches what the mobile app actually calls:
 
 ```bash
 cd ml
 pip install -r requirements.txt
+python evaluate_app_models.py
+```
 
+Optional — recover the original CNN_2 56/19/19 split if those training crops are on disk:
+
+```bash
+export PHAGESCAN_ORIGINAL_WELLS=/path/to/PhageScan-lydia/SegmentedWells
+python evaluate_app_models.py
+```
+
+| Step | Script | Output |
+|------|--------|--------|
+| App/API models | `evaluate_app_models.py` | `results/` including `EVALUATION_REPORT.md` |
+
+### Historical RGB rule and Random Forest
+
+These methods are **not** used by the current app and are not stored in `results/`. The scripts remain; optional regenerated outputs go under `data/archive/`:
+
+```bash
 python rgb_classifier.py
 python evaluate.py
 python train_random_forest.py
@@ -206,32 +230,49 @@ python report_metrics.py
 | Classify | `rgb_classifier.py` | `data/classification_results.csv` |
 | Evaluate | `evaluate.py` | `data/merged_results_with_accuracy.csv` |
 | Train RF | `train_random_forest.py` | `data/rf_blind_test_results.csv` |
-| Metrics | `report_metrics.py` | `results/` |
+| Metrics | `report_metrics.py` | `data/archive/rf_rgb_evaluation/` |
 
 Labels: `data/ground_truth_labels.csv` for both RGB and Random Forest.
 
 ## Evaluation setup
 
-Active evaluations (from `python report_metrics.py`):
+App/API evaluations (`python evaluate_app_models.py`):
 
-1. **RGB rule** — full set of 94 demo wells vs `data/ground_truth_labels.csv` (no training).
-2. **Random Forest holdout** — stratified 80/20 split (`random_state=42`) on the same labels; 100 trees, `class_weight="balanced"`.
+1. **Binary CNN** — deployed `api/models/well_classifier_cnn.h5`, production preprocessing and `BINARY_LABELS`. Full 94-well demo vs `data/ground_truth_labels.csv`. If original `SegmentedWells` are available, also the recovered CNN_2 train/val/test split vs the serving-aligned RGB rule.
+2. **3-class RGB rule** — production thresholds (&lt;10 Effective, &lt;25 Somewhat Effective, else Ineffective). Predictions only; no independent 3-class labels exist.
+3. **4-class CNN** — API-only `well_classifier_cnn_4_classes.h5`. Architecture and prediction characterization only; no 4-class labels exist.
+
+Historical evaluations (`python report_metrics.py`), kept separate:
+
+1. **Binary RGB rule** — full set of 94 demo wells vs `data/ground_truth_labels.csv`.
+2. **Random Forest holdout** — stratified 80/20 split (`random_state=42`); 100 trees, `class_weight="balanced"`.
 3. **Random Forest 5-fold CV** — `StratifiedKFold` on the same 94 wells.
 
 A legacy 136-row RF label file lives in `data/archive/` and is **not** used.
 
 ### Label caveat
 
-`data/ground_truth_labels.csv` has **not** been independently verified as biological ground truth (no wet-lab assay recorded in this repo). On the demo plate these labels match the RGB distance rule (threshold 20). High RGB/RF scores therefore mean the models agree with this labeling on one plate; they are not evidence that the pipeline detects experimentally confirmed phage effectiveness.
+`data/ground_truth_labels.csv` has **not** been independently verified as biological ground truth (no wet-lab assay recorded in this repo). On the demo plate these labels match the RGB distance rule (threshold 20). High CNN/RGB/RF scores therefore mean the models agree with this labeling on one plate; they are not evidence that the pipeline detects experimentally confirmed phage effectiveness.
 
 ## Metrics report
+
+Application models:
+
+```bash
+cd ml
+python evaluate_app_models.py
+```
+
+Outputs: `results/EVALUATION_REPORT.md`, `results/binary_cnn/`, `results/three_class_rgb/`, `results/four_class_cnn/`, and `results/figures/` (300 DPI PNGs).
+
+Historical RGB/RF (optional, not app results):
 
 ```bash
 cd ml
 python report_metrics.py
 ```
 
-Outputs: `results/METRICS.md`, `results/metrics_summary.csv`, `results/metrics.json`, and `results/figures/`. Re-run this script after changing labels or models so reports stay in sync.
+Outputs: `data/archive/rf_rgb_evaluation/`. This does not write into `results/`.
 
 ## License
 

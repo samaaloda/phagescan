@@ -1,3 +1,6 @@
-model,split,n,accuracy,balanced_accuracy,precision_ineffective,precision_effective,precision_macro,precision_weighted,precision_micro,recall_ineffective,recall_effective,recall_macro,recall_weighted,recall_micro,f1_ineffective,f1_effective,f1_macro,f1_weighted,f1_micro,specificity_ineffective,specificity_effective,matthews_corrcoef,cohen_kappa,roc_auc,average_precision,tn,fp,fn,tp,support_ineffective,support_effective
-rgb_rule,full,94,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,47,0,0,47,47,47
-random_forest_gt_labels,holdout,19,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,10,0,0,9,10,9
+model,split,n,accuracy,balanced_accuracy,precision_macro,recall_macro,f1_macro,precision_weighted,recall_weighted,f1_weighted,roc_auc,average_precision,support_ineffective,precision_ineffective,recall_ineffective,f1_ineffective,support_effective,precision_effective,recall_effective,f1_effective
+binary_cnn,full_demo_vs_csv_labels,94,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,47,1.0,1.0,1.0,47,1.0,1.0,1.0
+binary_cnn,full_demo_vs_rgb_rule,94,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,47,1.0,1.0,1.0,47,1.0,1.0,1.0
+binary_cnn,original_train_vs_rgb_rule,56,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,27,1.0,1.0,1.0,29,1.0,1.0,1.0
+binary_cnn,original_val_vs_rgb_rule,19,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,8,1.0,1.0,1.0,11,1.0,1.0,1.0
+binary_cnn,original_test_vs_rgb_rule,19,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.9999999999999999,12,1.0,1.0,1.0,7,1.0,1.0,1.0
