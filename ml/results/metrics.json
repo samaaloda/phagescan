@@ -1,0 +1,283 @@
+{
+  "rgb_rule_full": {
+    "n": 94,
+    "support": {
+      "ineffective": 47,
+      "effective": 47,
+      "total": 94
+    },
+    "accuracy": 1.0,
+    "balanced_accuracy": 1.0,
+    "class_accuracy": {
+      "ineffective": 1.0,
+      "effective": 1.0
+    },
+    "confusion_matrix": {
+      "labels": [
+        "ineffective",
+        "effective"
+      ],
+      "counts": [
+        [
+          47,
+          0
+        ],
+        [
+          0,
+          47
+        ]
+      ],
+      "normalized_true": [
+        [
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0
+        ]
+      ],
+      "normalized_pred": [
+        [
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    "precision": {
+      "ineffective": 1.0,
+      "effective": 1.0,
+      "macro": 1.0,
+      "weighted": 1.0,
+      "micro": 1.0
+    },
+    "recall": {
+      "ineffective": 1.0,
+      "effective": 1.0,
+      "macro": 1.0,
+      "weighted": 1.0,
+      "micro": 1.0
+    },
+    "f1": {
+      "ineffective": 1.0,
+      "effective": 1.0,
+      "macro": 1.0,
+      "weighted": 1.0,
+      "micro": 1.0
+    },
+    "specificity": {
+      "ineffective": 1.0,
+      "effective": 1.0
+    },
+    "matthews_corrcoef": 1.0,
+    "cohen_kappa": 1.0,
+    "sklearn_report": {
+      "ineffective": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 47.0
+      },
+      "effective": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 47.0
+      },
+      "accuracy": 1.0,
+      "macro avg": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 94.0
+      },
+      "weighted avg": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 94.0
+      }
+    },
+    "roc_auc": 1.0,
+    "average_precision": 1.0
+  },
+  "random_forest_ground_truth_holdout": {
+    "n": 19,
+    "support": {
+      "ineffective": 10,
+      "effective": 9,
+      "total": 19
+    },
+    "accuracy": 1.0,
+    "balanced_accuracy": 1.0,
+    "class_accuracy": {
+      "ineffective": 1.0,
+      "effective": 1.0
+    },
+    "confusion_matrix": {
+      "labels": [
+        "ineffective",
+        "effective"
+      ],
+      "counts": [
+        [
+          10,
+          0
+        ],
+        [
+          0,
+          9
+        ]
+      ],
+      "normalized_true": [
+        [
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0
+        ]
+      ],
+      "normalized_pred": [
+        [
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    "precision": {
+      "ineffective": 1.0,
+      "effective": 1.0,
+      "macro": 1.0,
+      "weighted": 1.0,
+      "micro": 1.0
+    },
+    "recall": {
+      "ineffective": 1.0,
+      "effective": 1.0,
+      "macro": 1.0,
+      "weighted": 1.0,
+      "micro": 1.0
+    },
+    "f1": {
+      "ineffective": 1.0,
+      "effective": 1.0,
+      "macro": 1.0,
+      "weighted": 1.0,
+      "micro": 1.0
+    },
+    "specificity": {
+      "ineffective": 1.0,
+      "effective": 1.0
+    },
+    "matthews_corrcoef": 1.0,
+    "cohen_kappa": 1.0,
+    "sklearn_report": {
+      "ineffective": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 10.0
+      },
+      "effective": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 9.0
+      },
+      "accuracy": 1.0,
+      "macro avg": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 19.0
+      },
+      "weighted avg": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 19.0
+      }
+    },
+    "roc_auc": 1.0,
+    "average_precision": 1.0
+  },
+  "random_forest_ground_truth_cv": {
+    "accuracy": {
+      "mean": 0.9789473684210528,
+      "std": 0.04707511531578505
+    },
+    "balanced_accuracy": {
+      "mean": 0.9777777777777779,
+      "std": 0.04969039949999535
+    },
+    "precision_macro": {
+      "mean": 0.9833333333333334,
+      "std": 0.03726779962499647
+    },
+    "precision_weighted": {
+      "mean": 0.9824561403508772,
+      "std": 0.03922926276315413
+    },
+    "recall_macro": {
+      "mean": 0.9777777777777779,
+      "std": 0.04969039949999535
+    },
+    "recall_weighted": {
+      "mean": 0.9789473684210528,
+      "std": 0.04707511531578505
+    },
+    "f1_macro": {
+      "mean": 0.978409090909091,
+      "std": 0.048278740423290896
+    },
+    "f1_weighted": {
+      "mean": 0.9785885167464116,
+      "std": 0.047877532054122304
+    },
+    "matthews_corrcoef": {
+      "mean": 0.9610152971798825,
+      "std": 0.08717244558841013
+    },
+    "cohen_kappa": {
+      "mean": 0.9573033707865168,
+      "std": 0.09547256533145168
+    },
+    "roc_auc": {
+      "mean": 1.0,
+      "std": 0.0
+    },
+    "average_precision": {
+      "mean": 1.0,
+      "std": 0.0
+    }
+  },
+  "notes": {
+    "classes": [
+      "ineffective",
+      "effective"
+    ],
+    "positive_class": "effective",
+    "rgb_threshold": 20,
+    "labels_independently_verified": false,
+    "rf": {
+      "n_estimators": 100,
+      "class_weight": "balanced",
+      "test_size": 0.2,
+      "n_folds": 5,
+      "random_state": 42
+    },
+    "label_sets": {
+      "ground_truth_labels.csv_n": 94
+    }
+  }
+}

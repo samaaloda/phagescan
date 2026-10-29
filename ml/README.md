@@ -19,7 +19,7 @@ The `ml/` directory contains the research and prototyping code behind PhageScan'
 
 - Segmenting wells from plate photos
 - Classifying wells by RGB color distance
-- Evaluating predictions against ground-truth labels
+- Evaluating the RGB rule and a Random Forest on demo-well labels
 - Training a Random Forest classifier on RGB histogram features
 
 ## Repo Contents
@@ -31,12 +31,14 @@ The `ml/` directory contains the research and prototyping code behind PhageScan'
 | `evaluate.py` | Compare predictions to ground truth, compute accuracy |
 | `train_random_forest.py` | Train/evaluate a Random Forest on RGB histograms |
 | `demo/plate.jpeg` | Demo plate photograph |
-| `demo/segmented_wells/` | Pre-segmented demo wells (96 PNGs, `circle_<row>_<col>.png`) |
-| `data/ground_truth_labels.csv` | Manual labels for demo wells |
+| `demo/segmented_wells/` | Pre-segmented demo wells (94 PNGs; `circle_1_11` and `circle_1_12` are missing) |
+| `data/ground_truth_labels.csv` | Demo-well labels used for RGB and RF evaluation (not independently verified as biological ground truth) |
 | `data/classification_results.csv` | RGB classifier output (generated) |
-| `data/merged_results_with_accuracy.csv` | Evaluation output (generated) |
-| `data/rf_ground_truth_labels.csv` | Labels for Random Forest training |
-| `data/rf_blind_test_results.csv` | Random Forest blind-test output (generated) |
+| `data/merged_results_with_accuracy.csv` | RGB vs label merge from `evaluate.py` (generated) |
+| `data/rf_blind_test_results.csv` | Random Forest holdout predictions from `train_random_forest.py` (generated) |
+| `data/archive/` | Legacy files, including an unused RF label CSV |
+| `report_metrics.py` | Reproducible metrics, confusion matrices, and figures |
+| `results/` | Generated metrics tables and figures |
 | `requirements.txt` | Python dependencies |
 
 ## System Requirements
@@ -138,7 +140,7 @@ Saved merged results to data/merged_results_with_accuracy.csv
 python train_random_forest.py
 ```
 
-**Input:** `data/rf_ground_truth_labels.csv`, `demo/segmented_wells/`
+**Input:** `data/ground_truth_labels.csv`, `demo/segmented_wells/`
 
 **Output:** `data/rf_blind_test_results.csv`, classification report printed to stdout.
 
@@ -196,6 +198,7 @@ pip install -r requirements.txt
 python rgb_classifier.py
 python evaluate.py
 python train_random_forest.py
+python report_metrics.py
 ```
 
 | Step | Script | Output |
@@ -203,8 +206,32 @@ python train_random_forest.py
 | Classify | `rgb_classifier.py` | `data/classification_results.csv` |
 | Evaluate | `evaluate.py` | `data/merged_results_with_accuracy.csv` |
 | Train RF | `train_random_forest.py` | `data/rf_blind_test_results.csv` |
+| Metrics | `report_metrics.py` | `results/` |
 
-Ground-truth labels: `data/ground_truth_labels.csv` (RGB evaluation), `data/rf_ground_truth_labels.csv` (Random Forest).
+Labels: `data/ground_truth_labels.csv` for both RGB and Random Forest.
+
+## Evaluation setup
+
+Active evaluations (from `python report_metrics.py`):
+
+1. **RGB rule** — full set of 94 demo wells vs `data/ground_truth_labels.csv` (no training).
+2. **Random Forest holdout** — stratified 80/20 split (`random_state=42`) on the same labels; 100 trees, `class_weight="balanced"`.
+3. **Random Forest 5-fold CV** — `StratifiedKFold` on the same 94 wells.
+
+A legacy 136-row RF label file lives in `data/archive/` and is **not** used.
+
+### Label caveat
+
+`data/ground_truth_labels.csv` has **not** been independently verified as biological ground truth (no wet-lab assay recorded in this repo). On the demo plate these labels match the RGB distance rule (threshold 20). High RGB/RF scores therefore mean the models agree with this labeling on one plate; they are not evidence that the pipeline detects experimentally confirmed phage effectiveness.
+
+## Metrics report
+
+```bash
+cd ml
+python report_metrics.py
+```
+
+Outputs: `results/METRICS.md`, `results/metrics_summary.csv`, `results/metrics.json`, and `results/figures/`. Re-run this script after changing labels or models so reports stay in sync.
 
 ## License
 

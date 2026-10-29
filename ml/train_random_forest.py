@@ -96,7 +96,7 @@ def train_and_evaluate(
 
 if __name__ == "__main__":
     train_and_evaluate(
-        ground_truth_csv=BASE_DIR / "data" / "rf_ground_truth_labels.csv",
+        ground_truth_csv=BASE_DIR / "data" / "ground_truth_labels.csv",
         segmented_folder=BASE_DIR / "demo" / "segmented_wells",
         output_csv=BASE_DIR / "data" / "rf_blind_test_results.csv",
     )
