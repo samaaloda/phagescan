@@ -1,16 +1,15 @@
 #!/usr/bin/env python3
-"""Evaluate classification methods used by the current PhageScan application.
+"""Evaluate the two classification methods used by the current PhageScan app.
 
-Active evaluations (this script):
   A. Binary CNN  — app "Analyze Image (Binary)"
-  B. 3-class RGB — app "Analyze Image (Multi-Class)"
-  C. 4-class CNN — API `model_type=multiclass` only; not called by the app
+  B. 3-class RGB — app "Analyze Image (Multi-Class)" (`model_type=rule`)
 
-Historical experiments are not scored here (Random Forest, historical 3-class CNN,
-binary RGB rule). Those outputs are not written to ml/results/.
+Historical / API-only models are not scored (4-class CNN, historical 3-class CNN,
+Random Forest, binary RGB rule).
 
-Inference for A–C uses the production helpers in api/classification_utils.py so
-preprocessing and class mappings match the deployed API.
+Inference uses api/classification_utils.py so preprocessing and mappings match
+the deployed API. The supervisor workbook is written to
+ml/results/app_evaluation/PhageScan_Model_Evaluation.xlsx.
 
 Re-run from ml/:
     python evaluate_app_models.py
@@ -48,15 +47,16 @@ from sklearn.metrics import (
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import label_binarize
 
+from export_app_workbook import export_workbook
+
 BASE_DIR = Path(__file__).resolve().parent
 REPO_ROOT = BASE_DIR.parent
 API_DIR = REPO_ROOT / "api"
 DATA_DIR = BASE_DIR / "data"
 WELLS_DIR = BASE_DIR / "demo" / "segmented_wells"
-OUT_DIR = BASE_DIR / "results"
+OUT_DIR = BASE_DIR / "results" / "app_evaluation"
 BIN_DIR = OUT_DIR / "binary_cnn"
 RGB3_DIR = OUT_DIR / "three_class_rgb"
-CNN4_DIR = OUT_DIR / "four_class_cnn"
 FIG_DIR = OUT_DIR / "figures"
 
 ORIGINAL_WELLS_CANDIDATES = [
@@ -73,9 +73,7 @@ ORIGINAL_HISTORY_CANDIDATES = [
 sys.path.insert(0, str(API_DIR))
 from classification_utils import (  # noqa: E402
     BINARY_LABELS,
-    MULTICLASS_LABELS,
     _calculate_rgb_histogram,
-    _classify_well_rgb,
     _get_model,
     _predict_label,
     preprocess_image,
@@ -83,7 +81,6 @@ from classification_utils import (  # noqa: E402
 
 BINARY_CLASSES = list(BINARY_LABELS)  # Ineffective, Effective
 RGB3_CLASSES = ["Effective", "Somewhat Effective", "Ineffective"]
-CNN4_CLASSES = list(MULTICLASS_LABELS)  # Effective, Ineffective, Somewhat Effective, Unknown
 CNN2_RANDOM_STATE = 42
 CNN2_TEST_SIZE = 0.4
 CNN2_VAL_TEST_SIZE = 0.5
@@ -177,14 +174,12 @@ def predict_batch(model_type: str, paths: list[Path]) -> tuple[list[str], np.nda
     if model_type == "rule":
         labels = [_predict_label("rule", str(path)) for path in paths]
         return labels, np.zeros((len(paths), 0))
+    if model_type != "binary":
+        raise ValueError(f"Unsupported model_type for CNN batching: {model_type}")
     model = _get_model(model_type)
     batch = np.concatenate([preprocess_image(str(path)) for path in paths], axis=0)
     probs = model.predict(batch, verbose=0)
-    if model_type == "binary":
-        names = BINARY_LABELS
-    else:
-        names = MULTICLASS_LABELS
-    labels = [names[int(np.argmax(row))] for row in probs]
+    labels = [BINARY_LABELS[int(np.argmax(row))] for row in probs]
     return labels, np.asarray(probs, dtype=float)
 
 
@@ -423,28 +418,6 @@ def plot_training_history(csv_path: Path, out_path: Path) -> None:
     plt.close(fig)
 
 
-def plot_binary_vs_four_cooccurrence(binary_labels: list[str], four_labels: list[str], path: Path) -> None:
-    df = pd.DataFrame({"binary": binary_labels, "four": four_labels})
-    table = pd.crosstab(df["binary"], df["four"]).reindex(
-        index=BINARY_CLASSES, columns=CNN4_CLASSES, fill_value=0
-    )
-    fig, ax = plt.subplots(figsize=(7.2, 3.6))
-    im = ax.imshow(table.to_numpy(), cmap="Blues")
-    ax.set_xticks(range(len(table.columns)), list(table.columns), rotation=20, ha="right")
-    ax.set_yticks(range(len(table.index)), list(table.index))
-    ax.set_xlabel("4-class CNN predicted")
-    ax.set_ylabel("Binary CNN predicted")
-    ax.set_title("Prediction co-occurrence (diagnostic, not a shared-task comparison)")
-    vmax = max(float(table.to_numpy().max()), 1.0)
-    for i in range(table.shape[0]):
-        for j in range(table.shape[1]):
-            value = int(table.iloc[i, j])
-            ax.text(j, i, str(value), ha="center", va="center", color="white" if value > vmax * 0.6 else "black")
-    fig.colorbar(im, ax=ax, fraction=0.046, pad=0.04)
-    fig.savefig(path, dpi=DPI)
-    plt.close(fig)
-
-
 def inspect_model(model_type: str) -> dict:
     model = _get_model(model_type)
     config = model.get_config()
@@ -471,7 +444,7 @@ def inspect_model(model_type: str) -> dict:
         "model_type": model_type,
         "input_shape": [None, 128, 128, 3],
         "output_units": output_units,
-        "expected_labels": BINARY_LABELS if model_type == "binary" else MULTICLASS_LABELS,
+        "expected_labels": BINARY_LABELS,
         "layers": layers,
     }
 
@@ -663,13 +636,19 @@ def evaluate_binary_cnn(demo_paths: list[Path], original_dir: Path | None) -> di
     history_path = _find_history_csv()
     history = {"available": False, "path": None}
     if history_path is not None:
+        visible_dir = BASE_DIR / "results" / "binary_cnn"
+        visible_dir.mkdir(parents=True, exist_ok=True)
         copied = BIN_DIR / "training_history_cnn2.csv"
+        visible = visible_dir / "CNN_2.csv"
         shutil.copy2(history_path, copied)
+        shutil.copy2(history_path, visible)
+        shutil.copy2(history_path, visible_dir / "training_history.csv")
         plot_training_history(copied, FIG_DIR / "binary_cnn_training_history.png")
         history = {
             "available": True,
             "source_path": str(history_path),
-            "copied_to": str(copied.relative_to(REPO_ROOT)),
+            "copied_to": str(visible.relative_to(REPO_ROOT)),
+            "also_copied_to": str(copied.relative_to(REPO_ROOT)),
             "note": "Copied from CNN_2.ipynb training log. Not a new training run.",
             "last_epoch": pd.read_csv(copied).iloc[-1].to_dict(),
         }
@@ -727,6 +706,16 @@ def evaluate_three_class_rgb(demo_paths: list[Path]) -> dict:
     df = pd.DataFrame(rows)
     df.to_csv(RGB3_DIR / "predictions_demo.csv", index=False)
     counts = {name: int((df["rgb_3class_predicted"] == name).sum()) for name in RGB3_CLASSES}
+    distance_stats = {}
+    for name in RGB3_CLASSES:
+        series = df.loc[df["rgb_3class_predicted"] == name, "rgb_distance"]
+        distance_stats[name] = {
+            "n": int(series.size),
+            "mean": float(series.mean()) if len(series) else None,
+            "std": float(series.std(ddof=1)) if len(series) > 1 else None,
+            "min": float(series.min()) if len(series) else None,
+            "max": float(series.max()) if len(series) else None,
+        }
     plot_counts(
         counts,
         "3-class RGB predictions on current demo wells",
@@ -757,6 +746,7 @@ def evaluate_three_class_rgb(demo_paths: list[Path]) -> dict:
         ),
         "label_inventory": inventory,
         "prediction_counts_demo": counts,
+        "distance_stats_by_class": distance_stats,
         "n_demo": int(len(df)),
         "note": (
             "The prediction-count figure is the classifier's output distribution, "
@@ -768,71 +758,6 @@ def evaluate_three_class_rgb(demo_paths: list[Path]) -> dict:
     (RGB3_DIR / "README.txt").write_text(
         payload["reason_metrics_omitted"] + "\n\nPrediction counts: " + json.dumps(counts) + "\n"
     )
-    return payload
-
-
-def evaluate_four_class_cnn(demo_paths: list[Path], binary_labels: list[str]) -> dict:
-    CNN4_DIR.mkdir(parents=True, exist_ok=True)
-    architecture = inspect_model("multiclass")
-    labels, probs = predict_batch("multiclass", demo_paths)
-    rows = []
-    for path, pred, row in zip(demo_paths, labels, probs):
-        item = {"Filename": path.name, "cnn4_predicted": pred}
-        for name, value in zip(MULTICLASS_LABELS, row):
-            item[f"prob_{name.replace(' ', '_')}"] = float(value)
-        rows.append(item)
-    df = pd.DataFrame(rows)
-    df.to_csv(CNN4_DIR / "predictions_demo.csv", index=False)
-    counts = {name: int((df["cnn4_predicted"] == name).sum()) for name in CNN4_CLASSES}
-    plot_counts(
-        counts,
-        "4-class CNN predictions on current demo wells",
-        FIG_DIR / "four_class_cnn_prediction_counts.png",
-        CNN4_CLASSES,
-    )
-    plot_binary_vs_four_cooccurrence(
-        binary_labels,
-        labels,
-        FIG_DIR / "binary_vs_four_class_prediction_cooccurrence.png",
-    )
-
-    missing = [
-        "No 4-class training notebook or label file was found (no Dense(4) trainer, no Unknown labels).",
-        "API maps argmax onto ['Effective', 'Ineffective', 'Somewhat Effective', 'Unknown'] without a saved LabelEncoder.",
-        "Current demo labels are binary only, so 4-class precision/recall cannot be computed without inventing classes.",
-    ]
-    payload = {
-        "mapping_risk_note": (
-            f"On the current demo plate this model predicted Unknown={counts.get('Unknown', 0)}, "
-            f"Somewhat Effective={counts.get('Somewhat Effective', 0)}, "
-            f"Effective={counts.get('Effective', 0)}, Ineffective={counts.get('Ineffective', 0)}. "
-            "The binary CNN predicted 47 Effective / 47 Ineffective on the same wells. "
-            "Without a recovered LabelEncoder, the API class names for this 4-class head "
-            "should not be treated as verified."
-        ),
-        "used_by_app": False,
-        "used_by_api": True,
-        "model_path": "api/models/well_classifier_cnn_4_classes.h5",
-        "architecture": architecture,
-        "output_mapping_trustworthy": "unknown",
-        "output_mapping_note": (
-            "The file is a Keras Sequential with Dense(4, softmax) and no L2, matching the "
-            "binary CNN backbone. There is no recovered training script, so the API label "
-            "order cannot be verified against a LabelEncoder. Predicted class counts on the "
-            "demo plate are a characterization only."
-        ),
-        "evaluable_against_reference_labels": False,
-        "metrics": None,
-        "reason_metrics_omitted": " ".join(missing),
-        "missing": missing,
-        "prediction_counts_demo": counts,
-        "n_demo": int(len(df)),
-        "predicted_unknown_count": counts.get("Unknown", 0),
-    }
-    with (CNN4_DIR / "architecture.json").open("w") as handle:
-        json.dump(architecture, handle, indent=2)
-    with (CNN4_DIR / "evaluation_status.json").open("w") as handle:
-        json.dump(payload, handle, indent=2)
     return payload
 
 
@@ -849,161 +774,108 @@ def write_summary_tables(binary_payload: dict) -> pd.DataFrame:
     return df
 
 
-def write_report(
-    binary_payload: dict,
-    rgb3_payload: dict,
-    cnn4_payload: dict,
-    summary_df: pd.DataFrame,
-) -> None:
+def write_report(binary_payload: dict, rgb3_payload: dict, summary_df: pd.DataFrame) -> None:
+    del summary_df
     demo_m = binary_payload["metrics_full_demo_vs_csv_labels"]
+    counts = rgb3_payload["prediction_counts_demo"]
+    n_rgb = rgb3_payload["n_demo"]
     lines = [
-        "# PhageScan application-model evaluation",
+        "# PhageScan deployed-app evaluation",
         "",
-        "Generated by `python evaluate_app_models.py`. This report covers the classifiers",
-        "wired into the current app and API. It does **not** retrain models.",
+        "Generated by `python evaluate_app_models.py`. Covers **only** the two classifiers",
+        "used by the current mobile app. Models are not retrained.",
         "",
-        "## Which models are which",
+        "Workbook: `ml/results/app_evaluation/PhageScan_Model_Evaluation.xlsx`",
         "",
-        "| Method | Location | Used by app? | Used by API? | Evaluated here? |",
-        "|---|---|---|---|---|",
-        "| Binary CNN (`well_classifier_cnn.h5`) | `api/models/` | Yes — Analyze Image (Binary) | Yes (`model_type=binary`, default) | Yes |",
-        "| 3-class RGB rule (distance &lt;10 / &lt;25) | `api/classification_utils.py` | Yes — Analyze Image (Multi-Class) sends `model_type=rule` | Yes (`model_type=rule`) | Predictions only; no independent labels |",
-        "| 4-class CNN (`well_classifier_cnn_4_classes.h5`) | `api/models/` | No | Yes (`model_type=multiclass`) | Architecture + prediction characterization; no labels |",
-        "| Random Forest (RGB histograms) | `ml/train_random_forest.py` | No | No | Historical — excluded from `ml/results/` |",
-        "| Historical 3-class CNN (`well_classifier_cnn_3_classes*.h5`) | older PhageScan-lydia folder | No | No | Excluded |",
-        "| Binary RGB rule (distance &lt;20) | `ml/rgb_classifier.py` | No | No | Excluded as a standalone app method; used only as a label-source diagnostic for the binary CNN |",
+        "## Methods used by the app",
         "",
-        "## Evaluation methodology",
+        "| Method | App control | API `model_type` | Classes |",
+        "|---|---|---|---|",
+        "| Binary CNN (`api/models/well_classifier_cnn.h5`) | Analyze Image (Binary) | `binary` (default) | Ineffective, Effective |",
+        "| Deterministic 3-class RGB rule | Analyze Image (Multi-Class) | `rule` | Effective, Somewhat Effective, Ineffective |",
         "",
-        "- Binary and 4-class CNN inference calls `api/classification_utils.py`:",
-        "  `preprocess_image` (128×128, divide by 255, OpenCV BGR), then `argmax` onto the API label lists.",
-        "- 3-class RGB inference uses the same `_classify_well_rgb` helper as production.",
-        "- Current demo set: 94 PNGs in `ml/demo/segmented_wells/` with `data/ground_truth_labels.csv`.",
-        "- Original CNN_2 split: 60/20/20, `random_state=42`, no stratification, on the 94 `SegmentedWells` crops from `CNN_2.ipynb`.",
-        "- Binary, 3-class, and 4-class scores are **not** comparable as the same task.",
-        "- Agreement with RGB-generated labels is not biological classification accuracy.",
+        "Excluded: 4-class CNN, historical 3-class CNN, Random Forest, and the binary RGB threshold-20 rule as a standalone app method.",
         "",
-        "## Headline numbers (binary CNN only)",
+        "## Binary CNN",
         "",
-        "| Split | n | Accuracy | Balanced acc. | F1 macro | ROC AUC | Label source |",
-        "|---|---:|---:|---:|---:|---:|---|",
-    ]
-    label_notes = {
-        "full_demo_vs_csv_labels": "ground_truth_labels.csv (RGB-matching, not wet-lab verified)",
-        "full_demo_vs_rgb_rule": "binary RGB rule, threshold 20 (circular diagnostic)",
-        "original_train_vs_rgb_rule": "RGB rule on original CNN_2 train wells",
-        "original_val_vs_rgb_rule": "RGB rule on original CNN_2 val wells",
-        "original_test_vs_rgb_rule": "RGB rule on original CNN_2 held-out test wells",
-    }
-    for _, row in summary_df.iterrows():
-        note = label_notes.get(row["split"], "")
-        lines.append(
-            f"| {row['split']} | {int(row['n'])} | {_fmt(row['accuracy'])} | {_fmt(row['balanced_accuracy'])} | {_fmt(row['f1_macro'])} | {_fmt(row['roc_auc'])} | {note} |"
-        )
-
-    lines += [
-        "",
-        "## A. Binary CNN — currently used in the app",
-        "",
-        f"- Weights: `{binary_payload['model_path']}`",
-        f"- Classes: {BINARY_CLASSES} (API `BINARY_LABELS`; `argmax` 0 = Ineffective, 1 = Effective).",
-        f"- Architecture: Conv16–Pool–Conv32–Pool–Flatten–Dense64–Dropout 0.3–Dense(2, softmax).",
+        f"- Production weights, `preprocess_image` (128×128, /255, BGR), `BINARY_LABELS` = {BINARY_CLASSES}.",
         f"- API verification (batched vs `_predict_label`): **{'pass' if binary_payload['api_verification']['all_match'] else 'FAIL'}**.",
-        f"- Current demo images are **not** the original training crops ({binary_payload['demo_images_note']}).",
+        "- Architecture: Conv16–Pool–Conv32–Pool–Flatten–Dense64–Dropout 0.3–Dense(2, softmax).",
+        f"- {binary_payload['demo_images_note']}",
         "",
     ]
-    lines += metrics_table(
-        "Full current demo vs `ground_truth_labels.csv`",
-        demo_m,
-        [
-            binary_payload["label_caveat"],
-            "Report this as label agreement on one demo plate, not independently validated biological accuracy.",
-        ],
-    )
-    if binary_payload["original_split"].get("available"):
-        test_m = binary_payload["original_split_metrics"]["test"]
+    if binary_payload["training_history"].get("available"):
+        last = binary_payload["training_history"]["last_epoch"]
+        lines += [
+            "### Training history (CNN_2.csv, 30 epochs — not a retrain)",
+            "",
+            f"Copied to `{binary_payload['training_history'].get('copied_to')}`. "
+            f"Final epoch train acc {_fmt(float(last.get('accuracy', float('nan'))))}, "
+            f"val acc {_fmt(float(last.get('val_accuracy', float('nan'))))}. "
+            "See the Excel History sheet for all 30 epochs and the first epoch that reached best validation accuracy.",
+            "",
+        ]
+    if binary_payload.get("original_split_metrics", {}).get("test"):
         lines += metrics_table(
-            "Original CNN_2 held-out test vs serving-aligned RGB rule",
-            test_m,
+            "Original held-out test (19 images) vs serving-aligned RGB rule",
+            binary_payload["original_split_metrics"]["test"],
             [
-                "These 19 wells were held out of CNN_2 training/validation. Labels are the binary RGB rule "
-                "(distance < 20 → Effective), i.e. the original notebook's effective evaluation target after "
-                "LabelEncoder/API mapping, not wet-lab assays.",
-                "Do not cite this as independent experimental accuracy.",
+                "These 19 wells were held out of the CNN_2 56/19/19 split. Labels are the binary RGB rule "
+                "(distance < 20 → Effective), not wet-lab assays. 100% is RGB-rule agreement."
             ],
         )
-        val_m = binary_payload["original_split_metrics"]["val"]
         train_m = binary_payload["original_split_metrics"]["train"]
+        val_m = binary_payload["original_split_metrics"]["val"]
+        test_m = binary_payload["original_split_metrics"]["test"]
         lines += [
-            f"Original split sizes: train {train_m['n']}, val {val_m['n']}, test {test_m['n']}.",
-            f"Train RGB-rule agreement { _fmt(train_m['accuracy']) }; validation { _fmt(val_m['accuracy']) }.",
+            f"Original split: train {train_m['n']}, val {val_m['n']}, test {test_m['n']}. "
+            f"Train RGB-rule agreement {_fmt(train_m['accuracy'])}; validation {_fmt(val_m['accuracy'])}.",
             "",
         ]
     else:
         lines += [
-            "### Original train/validation/test split",
+            "### Original held-out test",
             "",
             binary_payload["original_split"].get("reason") or "Not recovered.",
             "",
-            "The current 94 demo wells cannot stand in for that split: they use different filenames and have no shared file hashes with the CNN_2 training folder.",
-            "",
         ]
-    if binary_payload["training_history"].get("available"):
-        last = binary_payload["training_history"]["last_epoch"]
-        lines += [
-            "### Saved CNN_2 training history (not a retrain)",
-            "",
-            f"Source: `{binary_payload['training_history'].get('source_path')}` "
-            f"(copied to `{binary_payload['training_history'].get('copied_to')}`). Last logged epoch: "
-            f"train acc {_fmt(float(last.get('accuracy', float('nan'))))}, "
-            f"val acc {_fmt(float(last.get('val_accuracy', float('nan'))))}.",
-            "Figure: `figures/binary_cnn_training_history.png`.",
-            "",
-        ]
-
+    lines += metrics_table(
+        "Full current demo (94 images) vs `ground_truth_labels.csv`",
+        demo_m,
+        [
+            binary_payload["label_caveat"],
+            "Report as label agreement on one demo plate, not independently validated biological accuracy.",
+        ],
+    )
     lines += [
-        "## B. 3-class RGB rule — currently used in the app",
+        "## Deterministic 3-class RGB rule",
         "",
         f"- Source: `{rgb3_payload['source']}`",
-        f"- Thresholds: {rgb3_payload['thresholds']}",
-        f"- Demo wells scored: {rgb3_payload['n_demo']}",
-        f"- Predicted counts: {rgb3_payload['prediction_counts_demo']}",
+        "- Thresholds: distance <10 Effective; ≥10 and <25 Somewhat Effective; ≥25 Ineffective.",
+        f"- Demo wells: {n_rgb}",
+        f"- Predicted counts: Effective {counts.get('Effective', 0)} "
+        f"({counts.get('Effective', 0)/n_rgb:.1%}), "
+        f"Somewhat Effective {counts.get('Somewhat Effective', 0)} "
+        f"({counts.get('Somewhat Effective', 0)/n_rgb:.1%}), "
+        f"Ineffective {counts.get('Ineffective', 0)} "
+        f"({counts.get('Ineffective', 0)/n_rgb:.1%}).",
         "",
-        f"**No classification metrics are reported.** {rgb3_payload['reason_metrics_omitted']}",
+        "| Metric | Value |",
+        "|---|---|",
+        "| Accuracy, balanced accuracy | N/A |",
+        "| Precision, recall, F1 | N/A |",
+        "| ROC AUC, average precision | N/A |",
         "",
-        "The bar chart in `figures/three_class_rgb_prediction_counts.png` is an output histogram.",
+        f"**Why N/A:** {rgb3_payload['reason_metrics_omitted']}",
         "",
-        "## C. 4-class CNN — API only, not used by the app",
+        "## What to tell a supervisor",
         "",
-        f"- Weights: `{cnn4_payload['model_path']}`",
-        f"- API mapping: {CNN4_CLASSES}",
-        f"- Output units: {cnn4_payload['architecture']['output_units']}",
-        f"- Demo predicted counts: {cnn4_payload['prediction_counts_demo']}",
-        "",
-        f"**No classification metrics are reported.** {cnn4_payload['reason_metrics_omitted']}",
-        "",
-        cnn4_payload["output_mapping_note"],
-        "",
-        cnn4_payload.get("mapping_risk_note", ""),
-        "",
-        "The co-occurrence figure vs the binary CNN is a mapping diagnostic. It is not a comparison of accuracy on a shared labeled task.",
-        "",
-        "## What is suitable for reporting",
-        "",
-        "| Result | Suitable to report as | Not suitable as |",
+        "| Result | How to describe it | Do not describe it as |",
         "|---|---|---|",
-        "| Binary CNN vs `ground_truth_labels.csv` on current demo | Agreement with the current binary labels on 94 wells from one plate | Wet-lab / independently verified accuracy |",
-        "| Binary CNN original held-out test vs RGB rule | Reproduction of the CNN_2 test protocol (rule agreement on held-out crops) | Independent 3-class or biological accuracy |",
-        "| CNN_2.csv train/val curves | Historical training log for the binary CNN | A newly run experiment |",
-        "| 3-class RGB prediction counts | Description of what the app Multi-Class button outputs | Accuracy, F1, or ROC |",
-        "| 4-class CNN prediction counts | Evidence the API model runs; class-prior characterization | Any performance claim |",
-        "",
-        "## Data gaps",
-        "",
-        "1. No independently verified experimental well labels in this repository.",
-        "2. No usable 3-class or 4-class reference labels (no Somewhat Effective / Unknown in current CSVs).",
-        "3. No 4-class training notebook, so API label order is unverified.",
-        "4. Original CNN_2 images live outside this git repo; recovered-split metrics require that folder.",
+        "| Binary CNN 100% on 19 held-out wells | Agreement with RGB-generated binary labels on the original CNN_2 test split | Independently verified biological accuracy |",
+        "| Binary CNN 100% on 94 demo wells | Agreement with `ground_truth_labels.csv` (those labels match the RGB rule) | A second independent wet-lab test |",
+        "| CNN_2 30-epoch curves | Training log for the binary CNN | A newly run experiment |",
+        "| 3-class RGB 15 / 32 / 47 | What the app Multi-Class button assigns on this demo plate | Accuracy of a 3-class model |",
         "",
         "## Reproduction",
         "",
@@ -1013,21 +885,53 @@ def write_report(
         "python evaluate_app_models.py",
         "```",
         "",
-        "Optional, to score the original CNN_2 split:",
+        "Optional original split:",
         "",
         "```bash",
         "export PHAGESCAN_ORIGINAL_WELLS=/path/to/PhageScan-lydia/SegmentedWells",
         "python evaluate_app_models.py",
         "```",
         "",
-        "Outputs are written under `ml/results/`.",
+        "Outputs: `ml/results/app_evaluation/`.",
         "",
     ]
     (OUT_DIR / "EVALUATION_REPORT.md").write_text("\n".join(lines))
 
 
+def _cleanup_obsolete_results() -> None:
+    """Remove generated outputs that are not the two deployed app methods."""
+    results_root = BASE_DIR / "results"
+    obsolete = [
+        results_root / "four_class_cnn",
+        results_root / "figures" / "four_class_cnn_prediction_counts.png",
+        results_root / "figures" / "binary_vs_four_class_prediction_cooccurrence.png",
+        OUT_DIR / "four_class_cnn",
+        FIG_DIR / "four_class_cnn_prediction_counts.png",
+        FIG_DIR / "binary_vs_four_class_prediction_cooccurrence.png",
+    ]
+    for name in (
+        "three_class_rgb",
+        "four_class_cnn",
+        "figures",
+        "EVALUATION_REPORT.md",
+        "metrics.json",
+        "metrics_summary.csv",
+    ):
+        obsolete.append(results_root / name)
+    for path in obsolete:
+        if not path.exists():
+            continue
+        if "rf_" in path.name:
+            continue
+        if path.is_dir():
+            shutil.rmtree(path)
+        else:
+            path.unlink()
+
+
 def main() -> None:
-    for path in (OUT_DIR, BIN_DIR, RGB3_DIR, CNN4_DIR, FIG_DIR):
+    _cleanup_obsolete_results()
+    for path in (OUT_DIR, BIN_DIR, RGB3_DIR, FIG_DIR):
         path.mkdir(parents=True, exist_ok=True)
 
     demo_names = _image_names(WELLS_DIR)
@@ -1045,9 +949,7 @@ def main() -> None:
     print("\n[A] Binary CNN")
     binary_payload = evaluate_binary_cnn(demo_paths, original_dir)
     demo_m = binary_payload["metrics_full_demo_vs_csv_labels"]
-    print(
-        f"  API mapping check: {'pass' if binary_payload['api_verification']['all_match'] else 'FAIL'}"
-    )
+    print(f"  API mapping check: {'pass' if binary_payload['api_verification']['all_match'] else 'FAIL'}")
     print(
         f"  Full demo vs CSV labels: n={demo_m['n']} acc={demo_m['accuracy']:.4f} "
         f"bal_acc={demo_m['balanced_accuracy']:.4f} f1_macro={demo_m['f1_macro']:.4f}"
@@ -1065,23 +967,26 @@ def main() -> None:
     rgb3_payload = evaluate_three_class_rgb(demo_paths)
     print(f"  Independent labels: no — {rgb3_payload['prediction_counts_demo']}")
 
-    print("\n[C] 4-class CNN (API only)")
-    binary_demo_labels = pd.read_csv(BIN_DIR / "predictions_demo.csv")["cnn_predicted"].tolist()
-    cnn4_payload = evaluate_four_class_cnn(demo_paths, binary_demo_labels)
-    print(f"  Independent labels: no — {cnn4_payload['prediction_counts_demo']}")
-
     summary_df = write_summary_tables(binary_payload)
-    write_report(binary_payload, rgb3_payload, cnn4_payload, summary_df)
+    write_report(binary_payload, rgb3_payload, summary_df)
 
-    combined = {
-        "binary_cnn": binary_payload,
-        "three_class_rgb": rgb3_payload,
-        "four_class_cnn": cnn4_payload,
-    }
+    history_csv = BIN_DIR / "training_history_cnn2.csv"
+    if not history_csv.exists():
+        raise SystemExit("CNN_2 training history was not recovered; cannot build the workbook.")
+    workbook = export_workbook(
+        OUT_DIR / "PhageScan_Model_Evaluation.xlsx",
+        binary_payload,
+        rgb3_payload,
+        pd.read_csv(history_csv),
+        pd.read_csv(RGB3_DIR / "predictions_demo.csv"),
+    )
+
+    combined = {"binary_cnn": binary_payload, "three_class_rgb": rgb3_payload}
     with (OUT_DIR / "metrics.json").open("w") as handle:
         json.dump(combined, handle, indent=2, default=str)
 
     print(f"\nWrote {OUT_DIR / 'EVALUATION_REPORT.md'}")
+    print(f"Wrote {workbook}")
     print(f"Figures: {FIG_DIR}")
 
 

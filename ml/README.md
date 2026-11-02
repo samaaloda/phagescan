@@ -38,9 +38,10 @@ The `ml/` directory contains the research and prototyping code behind PhageScan'
 | `data/merged_results_with_accuracy.csv` | RGB vs label merge from `evaluate.py` (generated) |
 | `data/rf_blind_test_results.csv` | Random Forest holdout predictions from `train_random_forest.py` (generated) |
 | `data/archive/` | Legacy files, including an unused RF label CSV |
-| `evaluate_app_models.py` | App/API classifier evaluation (binary CNN, 3-class RGB, 4-class CNN) |
+| `evaluate_app_models.py` | Deployed-app evaluation (binary CNN + 3-class RGB) and Excel workbook |
+| `export_app_workbook.py` | Supervisor Excel workbook builder |
 | `report_metrics.py` | Historical RGB-rule and Random Forest metrics (writes to `data/archive/`) |
-| `results/` | App-model metrics only: binary CNN, 3-class RGB, 4-class CNN |
+| `results/app_evaluation/` | Deployed-app metrics, figures, `EVALUATION_REPORT.md`, and `PhageScan_Model_Evaluation.xlsx` |
 | `requirements.txt` | Python dependencies |
 
 ## System Requirements
@@ -65,7 +66,7 @@ No GPU required. OpenCV and scikit-learn run on CPU.
 opencv-python-headless, numpy, pandas, scikit-learn, matplotlib, tensorflow
 ```
 
-TensorFlow is required for `evaluate_app_models.py` (binary and 4-class CNNs). The RGB/Random Forest scripts run without it.
+TensorFlow and openpyxl are required for `evaluate_app_models.py`. The RGB/Random Forest scripts run without them.
 
 ## Installation Guide
 
@@ -212,7 +213,7 @@ python evaluate_app_models.py
 
 | Step | Script | Output |
 |------|--------|--------|
-| App/API models | `evaluate_app_models.py` | `results/` including `EVALUATION_REPORT.md` |
+| Deployed app models | `evaluate_app_models.py` | `results/app_evaluation/PhageScan_Model_Evaluation.xlsx` and `EVALUATION_REPORT.md` |
 
 ### Historical RGB rule and Random Forest
 
@@ -236,11 +237,10 @@ Labels: `data/ground_truth_labels.csv` for both RGB and Random Forest.
 
 ## Evaluation setup
 
-App/API evaluations (`python evaluate_app_models.py`):
+App evaluations (`python evaluate_app_models.py`):
 
 1. **Binary CNN** — deployed `api/models/well_classifier_cnn.h5`, production preprocessing and `BINARY_LABELS`. Full 94-well demo vs `data/ground_truth_labels.csv`. If original `SegmentedWells` are available, also the recovered CNN_2 train/val/test split vs the serving-aligned RGB rule.
-2. **3-class RGB rule** — production thresholds (&lt;10 Effective, &lt;25 Somewhat Effective, else Ineffective). Predictions only; no independent 3-class labels exist.
-3. **4-class CNN** — API-only `well_classifier_cnn_4_classes.h5`. Architecture and prediction characterization only; no 4-class labels exist.
+2. **3-class RGB rule** — production thresholds (&lt;10 Effective, &lt;25 Somewhat Effective, else Ineffective). Predictions and distance statistics only; no independent 3-class labels exist.
 
 Historical evaluations (`python report_metrics.py`), kept separate:
 
@@ -263,7 +263,7 @@ cd ml
 python evaluate_app_models.py
 ```
 
-Outputs: `results/EVALUATION_REPORT.md`, `results/binary_cnn/`, `results/three_class_rgb/`, `results/four_class_cnn/`, and `results/figures/` (300 DPI PNGs).
+Outputs: `results/app_evaluation/PhageScan_Model_Evaluation.xlsx`, `results/app_evaluation/EVALUATION_REPORT.md`, supporting CSVs, and 300 DPI figures for the two deployed methods.
 
 Historical RGB/RF (optional, not app results):
 

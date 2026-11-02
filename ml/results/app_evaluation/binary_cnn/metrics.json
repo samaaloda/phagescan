@@ -588,7 +588,7 @@
   "training_history": {
     "available": true,
     "source_path": "/Users/sama/Desktop/phage-scan/PhageScan-lydia/CNN_2.csv",
-    "copied_to": "ml/results/binary_cnn/training_history_cnn2.csv",
+    "copied_to": "ml/results/app_evaluation/binary_cnn/training_history_cnn2.csv",
     "note": "Copied from CNN_2.ipynb training log. Not a new training run.",
     "last_epoch": {
       "accuracy": 1.0,

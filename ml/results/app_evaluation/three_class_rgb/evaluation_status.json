@@ -19,6 +19,29 @@
     "Somewhat Effective": 32,
     "Ineffective": 47
   },
+  "distance_stats_by_class": {
+    "Effective": {
+      "n": 15,
+      "mean": 5.012551959856316,
+      "std": 2.1232529414305534,
+      "min": 1.4142135623730951,
+      "max": 8.831760866327848
+    },
+    "Somewhat Effective": {
+      "n": 32,
+      "mean": 14.58416061459002,
+      "std": 2.6253865667494356,
+      "min": 10.198039027185569,
+      "max": 19.79898987322333
+    },
+    "Ineffective": {
+      "n": 47,
+      "mean": 73.84603077786298,
+      "std": 4.65294601086457,
+      "min": 62.849025449882674,
+      "max": 84.9352694703443
+    }
+  },
   "n_demo": 94,
   "note": "The prediction-count figure is the classifier's output distribution, not an accuracy result."
 }
